@@ -16,27 +16,34 @@ import matplotlib.pyplot as plt
 
 # Import datasets, classifiers and performance metrics
 from sklearn import metrics, svm
+from utils import preprocess_data, split_train_dev_test, train_model, read_digits, predict_and_eval
 
-from utils import preprocess_data, split_data, train_model, read_digits
 # 1. Get the data
 X, y = read_digits()
 
-# 3. Data splitting to create test and train sets
+# 2. Split data into train, dev, and test sets
+X_train, X_test, y_train, y_test, X_dev, y_dev = split_train_dev_test(X, y, test_size=0.2, dev_size=0.1)
 
-X_train, X_test, y_train, y_test = split_data(X, y, test_size=0.3);
-
-# 4. Data preprocessing
+# 3. Data preprocessing
 X_train = preprocess_data(X_train)
+X_dev = preprocess_data(X_dev)
 X_test = preprocess_data(X_test)
 
 # Create a classifier: a support vector classifier
 clf = svm.SVC(gamma=0.001)
 
-# 5. Model training
+# 4. Model training
 model = train_model(X_train, y_train, {'gamma': 0.001}, model_type='svm')
 
-# 6. Getting model predictions on test set
-# Predict the value of the digit on the test subset
+# 5. Predict and evaluate using the dev set
+predicted_dev, classification_report_dev = predict_and_eval(model, X_dev, y_dev)
+print("Evaluation on Dev Set:")
+print(classification_report_dev)
+
+# 6. Getting model predictions on the test set and evaluating
+predicted_test, classification_report_test = predict_and_eval(model, X_test, y_test)
+print("Evaluation on Test Set:")
+print(classification_report_test)
 
 predicted = model.predict(X_test)
 
