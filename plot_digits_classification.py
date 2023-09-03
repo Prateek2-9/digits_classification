@@ -22,7 +22,7 @@ from utils import preprocess_data, split_train_dev_test, train_model, read_digit
 X, y = read_digits()
 
 # 2. Split data into train, dev, and test sets
-X_train, X_test, y_train, y_test, X_dev, y_dev = split_train_dev_test(X, y, test_size=0.2, dev_size=0.1)
+X_train, X_test, X_dev, y_train, y_test, y_dev = split_train_dev_test(X, y, test_size=0.3, dev_size=0.2)
 
 # 3. Data preprocessing
 X_train = preprocess_data(X_train)
