@@ -10,54 +10,44 @@ hand-written digits, from 0-9.
 
 # Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
 # License: BSD 3 clause
-
-# Standard scientific Python imports
 import matplotlib.pyplot as plt
+from sklearn import metrics
+from utils import preprocess_data, split_train_dev_test, read_digits, tune_hparams, predict_and_eval
+from itertools import product
 
-# Import datasets, classifiers and performance metrics
-from sklearn import metrics, svm
-from utils import preprocess_data, split_train_dev_test, train_model, read_digits, predict_and_eval
 gamma_ranges = [0.001, 0.01, 0.1, 1, 10, 100]
 C_ranges = [0.1, 1, 2, 5, 10]
+test_dev_sizes = [(0.1, 0.1), (0.1, 0.2), (0.1, 0.3), (0.2, 0.1), (0.2, 0.2), (0.2, 0.3), (0.3, 0.1), (0.3, 0.2), (0.3, 0.3)]
 
-# 1. Get the data
-X, y = read_digits()
+for test_size, dev_size in test_dev_sizes:
+    train_size = 1.0 - test_size - dev_size
 
-# 2. Split data into train, dev, and test sets
-X_train, X_test, X_dev, y_train, y_test, y_dev = split_train_dev_test(X, y, test_size=0.3, dev_size=0.2)
+    # 1. Get the data
+    X, y = read_digits()
 
-# 3. Data preprocessing
-X_train = preprocess_data(X_train)
-X_dev = preprocess_data(X_dev)
-X_test = preprocess_data(X_test)
+    # 2. Split data into train, dev, and test sets
+    X_train, X_test, X_dev, y_train, y_test, y_dev = split_train_dev_test(X, y, test_size=test_size, dev_size=dev_size)
 
-# Create a classifier: a support vector classifier
-clf = svm.SVC(gamma=0.001)
+    # 3. Data preprocessing
+    X_train = preprocess_data(X_train)
+    X_dev = preprocess_data(X_dev)
+    X_test = preprocess_data(X_test)
 
-# HYPER PARAMETER TUNING 
-# Take all combinatons of gamma and c
-best_acc_so_far = -1
-best_model = None
-for cur_gamma in gamma_ranges:
-    for cur_C in C_ranges:
-        # print("Running fror gamma={} C={}".format(cur_gamma, cur_C))
-        # Train model with cur_gamma and cur_C
-        # 5. Model training
-        cur_model = train_model(X_train, y_train, {'gamma': cur_gamma, 'C': cur_C}, model_type='svm')
-        # Get some performance metric on DEV set
-        cur_accuracy = predict_and_eval(cur_model, X_dev, y_dev)
-        # Select the hparams that yeilds the best performance on DEV set
-        if cur_accuracy > best_acc_so_far:
-            print("New best accuracy: ", cur_accuracy)
-            best_acc_so_far = cur_accuracy
-            optimal_gamma = cur_gamma
-            optimal_C = cur_C
-            best_model = cur_model
-print("Optimal parameters gamma: ", optimal_gamma, "C: ", optimal_C)
+    # HYPERPARAMETER TUNING
+    # Create a list of dictionaries for hyperparameter combinations
+    param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in product(gamma_ranges, C_ranges)]
 
-# 8. Evaluation
-test_acc = predict_and_eval(best_model, X_test, y_test)
-print('Test Accuracy: ', test_acc)
+    # Perform hyperparameter tuning
+    best_hparams, best_model, best_acc = tune_hparams(X_train, y_train, X_dev, y_dev, param_combinations, model_type='svm')
+
+    # Print the results
+    train_acc = predict_and_eval(best_model, X_train, y_train)
+    dev_acc = predict_and_eval(best_model, X_dev, y_dev)
+    test_acc = predict_and_eval(best_model, X_test, y_test)
+
+    print(f'test_size={test_size} dev_size={dev_size} train_size={train_size:.1f} train_acc={train_acc:.4f} dev_acc={dev_acc:.4f} test_acc={test_acc:.4f}')
+    print(f'Best Hyperparameters for this combination: {best_hparams}\n')
+
 
 # # 5. Predict and evaluate using the dev set
 # predicted_dev, classification_report_dev = predict_and_eval(model, X_dev, y_dev)
