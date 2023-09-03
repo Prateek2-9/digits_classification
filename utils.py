@@ -1,3 +1,4 @@
+from itertools import product
 from sklearn.model_selection import train_test_split
 from sklearn import svm, datasets, metrics
 
@@ -19,7 +20,7 @@ def split_train_dev_test(X, y, test_size, dev_size):
 
 def train_model(x, y, model_params, model_type="svm"):
     if model_type == "svm":
-        clf = svm.SVC(**model_params)  # Corrected clf usage
+        clf = svm.SVC(**model_params)
     model = clf
     model.fit(x, y)
     return model
@@ -34,3 +35,22 @@ def predict_and_eval(model, X_data, y_data):
     predicted = model.predict(X_data)
     accuracy = metrics.accuracy_score(y_data, predicted)
     return accuracy
+
+def tune_hparams(X_train, y_train, X_dev, y_dev, param_combinations, model_type="svm"):
+    best_acc_so_far = -1
+    best_model = None
+    best_hparams = None
+
+    for model_params in param_combinations:
+        if model_type == "svm":
+            clf = svm.SVC(**model_params)
+        model = clf
+        model.fit(X_train, y_train)
+        cur_accuracy = predict_and_eval(model, X_dev, y_dev)
+
+        if cur_accuracy > best_acc_so_far:
+            best_acc_so_far = cur_accuracy
+            best_hparams = model_params
+            best_model = model
+
+    return best_hparams, best_model, best_acc_so_far
