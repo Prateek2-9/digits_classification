@@ -52,14 +52,9 @@ for test_size, dev_size in test_dev_sizes:
     total_samples = len(X_train) + len(X_dev) + len(X_test)
     print(f"Total number of samples in the dataset: {total_samples}")
 
-    # Task 2.2: Print the size (height and width) of the images in the dataset
-    image_height, image_width = 8, 8  # Since these are flattened 64-pixel images
+    # 2.2: Print the size (height and width) of the images in the dataset
+    image_height, image_width = 8, 8
     print(f"Size of the images in the dataset (height x width): {image_height} x {image_width}")
-
-
-
-
-
 
 
 # # 5. Predict and evaluate using the dev set
