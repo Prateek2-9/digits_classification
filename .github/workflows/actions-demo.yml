@@ -23,6 +23,6 @@ jobs:
       - name: Run experiment
         run: python plot_digits_classification.py
       - name: Print Additional Information
-        run: echo "Additional information: This is new step."
+        run: echo "Addition This is new step."
       - name: Run resize script
         run: python digits_classification_resize.py
