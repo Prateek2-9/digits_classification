@@ -1,8 +1,6 @@
-# digit_classification_resizer.py
-
 import matplotlib.pyplot as plt
 from sklearn import metrics
-from skimage.transform import resize
+from PIL import Image
 from utils import preprocess_data, split_train_dev_test, read_digits, tune_hparams, predict_and_eval
 from itertools import product
 import numpy as np
@@ -14,9 +12,9 @@ test_size = 0.2
 
 for image_size in image_sizes:
     X, y = read_digits()
-    resized_images = [resize(image, image_size) for image in X]
+    resized_images = [Image.fromarray((image * 255).astype('uint8')).resize(image_size) for image in X]
 
-    flattened_images = [image.reshape(-1) for image in resized_images]
+    flattened_images = [np.array(image).reshape(-1) for image in resized_images]
 
     X_train, X_test, X_dev, y_train, y_test, y_dev = split_train_dev_test(flattened_images, y, test_size=test_size, dev_size=dev_size)
 
@@ -36,4 +34,3 @@ for image_size in image_sizes:
 
     print(f"image size: {image_size[0]}x{image_size[1]} train_size: {train_size} dev_size: {dev_size} test_size: {test_size} train_acc: {train_acc:.4f} dev_acc: {dev_acc:.4f} test_acc: {test_acc:.4f}")
 
-print("::set-output name=results::Digit classification with different image sizes completed.")
