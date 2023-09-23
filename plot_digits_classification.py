@@ -48,6 +48,19 @@ for test_size, dev_size in test_dev_sizes:
     print(f'test_size={test_size} dev_size={dev_size} train_size={train_size:.1f} train_acc={train_acc:.4f} dev_acc={dev_acc:.4f} test_acc={test_acc:.4f}')
     print(f'Best Hyperparameters for this combination: {best_hparams}\n')
 
+    # 2.1: Print the number of total samples
+    total_samples = len(X_train) + len(X_dev) + len(X_test)
+    print(f"Total number of samples in the dataset: {total_samples}")
+
+    # Task 2.2: Print the size (height and width) of the images in the dataset
+    image_height, image_width = 8, 8  # Since these are flattened 64-pixel images
+    print(f"Size of the images in the dataset (height x width): {image_height} x {image_width}")
+
+
+
+
+
+
 
 # # 5. Predict and evaluate using the dev set
 # predicted_dev, classification_report_dev = predict_and_eval(model, X_dev, y_dev)

@@ -22,3 +22,5 @@ jobs:
         run:  pip3 install --no-cache-dir -r requirements.txt
       - name: Run experiment
         run: python plot_digits_classification.py
+      - name: Print Additional Information
+        run: echo "Additional information: This is new step."
