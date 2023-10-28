@@ -1,131 +1,111 @@
 """
-================================
-Recognizing hand-written digits
-================================
-
-This example shows how scikit-learn can be used to recognize images of
-hand-written digits, from 0-9.
+Author: Prateek 
+digit classification model code for mlops 
 
 """
 
-# Author: Gael Varoquaux <gael dot varoquaux at normalesup dot org>
-# License: BSD 3 clause
-import matplotlib.pyplot as plt
-from sklearn import metrics
-from utils import preprocess_data, split_train_dev_test, read_digits, tune_hparams, predict_and_eval
-from itertools import product
+#utils import
+from utils import load_dataset, data_preprocessing, split_train_dev_test,predict_and_eval
+from utils import get_list_of_param_comination, tune_hparams
+import pandas as pd 
+import sys
+from joblib import dump, load
+from sklearn.metrics import confusion_matrix, classification_report,f1_score
 
-gamma_ranges = [0.001, 0.01, 0.1, 1, 10, 100]
-C_ranges = [0.1, 1, 2, 5, 10]
-test_dev_sizes = [(0.1, 0.1), (0.1, 0.2), (0.1, 0.3), (0.2, 0.1), (0.2, 0.2), (0.2, 0.3), (0.3, 0.1), (0.3, 0.2), (0.3, 0.3)]
-
-for test_size, dev_size in test_dev_sizes:
-    train_size = 1.0 - test_size - dev_size
-
-    # 1. Get the data
-    X, y = read_digits()
-
-    # 2. Split data into train, dev, and test sets
-    X_train, X_test, X_dev, y_train, y_test, y_dev = split_train_dev_test(X, y, test_size=test_size, dev_size=dev_size)
-
-    # 3. Data preprocessing
-    X_train = preprocess_data(X_train)
-    X_dev = preprocess_data(X_dev)
-    X_test = preprocess_data(X_test)
-
-    # HYPERPARAMETER TUNING
-    # Create a list of dictionaries for hyperparameter combinations
-    param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in product(gamma_ranges, C_ranges)]
-
-    # Perform hyperparameter tuning
-    best_hparams, best_model, best_acc = tune_hparams(X_train, y_train, X_dev, y_dev, param_combinations, model_type='svm')
-
-    # Print the results
-    train_acc = predict_and_eval(best_model, X_train, y_train)
-    dev_acc = predict_and_eval(best_model, X_dev, y_dev)
-    test_acc = predict_and_eval(best_model, X_test, y_test)
-
-    print(f'test_size={test_size} dev_size={dev_size} train_size={train_size:.1f} train_acc={train_acc:.4f} dev_acc={dev_acc:.4f} test_acc={test_acc:.4f}')
-    print(f'Best Hyperparameters for this combination: {best_hparams}\n')
-
-    # 2.1: Print the number of total samples
-    total_samples = len(X_train) + len(X_dev) + len(X_test)
-    print(f"Total number of samples in the dataset: {total_samples}")
-
-    # Task 2.2: Print the size (height and width) of the images in the dataset
-    image_height, image_width = 8, 8  # Since these are flattened 64-pixel images
-    print(f"Size of the images in the dataset (height x width): {image_height} x {image_width}")
+total_run = int(sys.argv[1])
+dev_size = [float(sys.argv[2])]
+test_size = [float(sys.argv[3])]
+prod_model_path = sys.argv[4]
+model_type = sys.argv[5]
 
 
+###########################################################################################
+#1.get/load the dataset
+X,y = load_dataset()
+###for quiz1 
+# print("total no of images in datasat",y.shape[0])
+# print("size of each image in datasat ", X[0].shape)
+
+#2.Sanity check of data
+
+################################################################################################
+#taking different combinations of train dev and test and reporting results
+
+# test_size =  [0.2]
+# dev_size = [0.2]
+# total_run = 5
+results = []
+for run_num in range(total_run):
+    for ts in test_size:
+        for ds in dev_size:
+            #3. Spliting the data
+            X_train, y_train, X_test, y_test, X_dev, y_dev = split_train_dev_test(X, y, test_size=ts, dev_size=ds)  
+
+            #################################################################################################
+            #4. Preprocessing the data
+            X_train = data_preprocessing(X_train)
+            X_test= data_preprocessing(X_test)
+            X_dev =data_preprocessing(X_dev)
+
+            #################################################################################################
+            #5. Classification model training
+            #5.1 SVM
+            #hyper parameter tuning for gamma and C
+            if model_type == 'svm':
+                gamma_values = [0.001, 0.002, 0.005, 0.01, 0.02]
+                C_values = [0.1, 0.2, 0.5, 0.75, 1]
+                list_of_param_comination = get_list_of_param_comination([gamma_values, C_values],  ['gamma', 'C'])
+                best_hparams, best_model, best_val_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, list_of_param_comination, model_type = model_type)
+
+                #get training accuracy of this best model:
+                train_accuracy, candidate_pred = predict_and_eval(best_model, X_train, y_train)
+
+                ################################################################################################
+                #6. Prediction and evaluation on test sat
+                # test accuracy
+                test_accuracy, candidate_pred = predict_and_eval(best_model, X_test, y_test)
+
+                #print for github actions
+                print('candidate svm model  ','test_size=',ts,' dev_size=',ds,' train_size=',round(1-ts-ds,2),' train_acc=',train_accuracy,' dev_acc',best_val_accuracy,' test_acc=',test_accuracy, ' best_hyper_params=', best_hparams)
+                results.append({'run_num':run_num,'model_type':model_type, 'train_accuracy':train_accuracy, 'val_accuracy':best_val_accuracy,
+                                'test_acc':test_accuracy, 'best_hparams':best_hparams})
+            #5.2 Decision Tree
+            #hyper parameter tunning
+            if model_type == 'tree':
+                max_depth = [5,10,20,30,50,75,100]
+                list_of_param_comination = get_list_of_param_comination([max_depth],  ['max_depth'])
+                best_hparams, best_model, best_val_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, list_of_param_comination,model_type = model_type)
+
+                #get training accuracy of this best model:
+                train_accuracy, candidate_pred = predict_and_eval(best_model, X_train, y_train)
+
+                ################################################################################################
+                #6. Prediction and evaluation on test sat
+                # test accuracy
+                test_accuracy, candidate_pred= predict_and_eval(best_model, X_test, y_test)
+
+                #print for github actions
+                print('candidate tree model ','test_size=',ts,' dev_size=',ds,' train_size=',round(1-ts-ds,2),' test_acc=',test_accuracy, ' best_hyper_params=', best_hparams)
+                results.append({'run_num':run_num,'model_type':model_type, 'train_accuracy':train_accuracy, 'val_accuracy':best_val_accuracy,
+                                'test_acc':test_accuracy, 'best_hparams':best_hparams})
+            if prod_model_path is not None:
+                prod_model = load(prod_model_path)
+                prod_test_accuracy, prodmodel_pred = predict_and_eval(prod_model, X_test, y_test)
+                print('prod model ','test_size=',ts,' dev_size=',ds,' train_size=',round(1-ts-ds,2),', test_acc=',test_accuracy)
+
+            cm = confusion_matrix(prodmodel_pred, candidate_pred)
+            print("confuson matrix btw prod and candidate model ", cm)
+
+            f1_scores = f1_score(y_test, candidate_pred, average=None)
+            # Calculate the macro-average F1 score
+            macro_avg_f1 = sum(f1_scores) / len(f1_scores)
+            print('macro avrege f1 score for candidate model : ', macro_avg_f1)
+
+            f1_scores = f1_score(y_test, prodmodel_pred, average=None)
+            # Calculate the macro-average F1 score
+            macro_avg_f1 = sum(f1_scores) / len(f1_scores)
+            print('macro avrege f1 score for prod model : ', macro_avg_f1)
 
 
-
-
-
-# # 5. Predict and evaluate using the dev set
-# predicted_dev, classification_report_dev = predict_and_eval(model, X_dev, y_dev)
-# print("Evaluation on Dev Set:")
-# print(classification_report_dev)
-
-# # 6. Getting model predictions on the test set and evaluating
-# predicted_test, classification_report_test = predict_and_eval(model, X_test, y_test)
-# print("Evaluation on Test Set:")
-# print(classification_report_test)
-
-# predicted = model.predict(X_test)
-
-# # 7. Visualization and printing confusion matrix
-# # Below we visualize the first 4 test samples and show their predicted digit value in the title.
-# _, axes = plt.subplots(nrows=1, ncols=4, figsize=(10, 3))
-# for ax, image, prediction in zip(axes, X_test, predicted_test):
-#     ax.set_axis_off()
-#     image = image.reshape(8, 8)
-#     ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
-#     ax.set_title(f"Prediction: {prediction}")
-
-# # Display the confusion matrix
-# disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted_test)
-# disp.figure_.suptitle("Confusion Matrix")
-# print(f"Confusion matrix:\n{disp.confusion_matrix}")
-
-# # Show the plots
-# plt.show()
-
-# # 8. Evaluation
-# print(
-#     f"Classification report for classifier {model}:\n"
-#     f"{metrics.classification_report(y_test, predicted)}\n"
-# )
-
-# ###############################################################################
-# # We can also plot a :ref:`confusion matrix <confusion_matrix>` of the
-# # true digit values and the predicted digit values.
-
-# disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted)
-# disp.figure_.suptitle("Confusion Matrix")
-# print(f"Confusion matrix:\n{disp.confusion_matrix}")
-
-
-# ###############################################################################
-# # If the results from evaluating a classifier are stored in the form of a
-# # :ref:`confusion matrix <confusion_matrix>` and not in terms of `y_true` and
-# # `y_pred`, one can still build a :func:`~sklearn.metrics.classification_report`
-# # as follows:
-
-
-# # The ground truth and predicted lists
-# y_true = []
-# y_pred = []
-# cm = disp.confusion_matrix
-
-# # For each cell in the confusion matrix, add the corresponding ground truths
-# # and predictions to the lists
-# for gt in range(len(cm)):
-#     for pred in range(len(cm)):
-#         y_true += [gt] * cm[gt][pred]
-#         y_pred += [pred] * cm[gt][pred]
-
-# print(
-#     "Classification report rebuilt from confusion matrix:\n"
-#     f"{metrics.classification_report(y_true, y_pred)}\n"
-# )
+# result_df = pd.DataFrame(results)
+# print(result_df.groupby('model_type').describe().T)
