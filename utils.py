@@ -32,17 +32,28 @@ def split_train_dev_test(X, y, test_size, dev_size):
 
 
 
-#model training
-def train_model(X_train, y_train, model_params, model_type):
+# #model training
+# def train_model(X_train, y_train, model_params, model_type):
+#     if model_type == 'svm':
+#         clf = svm.SVC
+#     if model_type == 'tree':
+#         clf =tree.DecisionTreeClassifier
+#     model = clf(**model_params)
+#     model.fit(X_train, y_train)
+#     dump(model, '/digits/models/production_model.joblib')
+#     # dump(model, 'models/production_model.joblib') 
+#     return model
+
+def train_model(X_train, y_train, model_params, model_type, model_filename):
     if model_type == 'svm':
         clf = svm.SVC
-    if model_type == 'tree':
-        clf =tree.DecisionTreeClassifier
+    elif model_type == 'tree':
+        clf = tree.DecisionTreeClassifier
     model = clf(**model_params)
     model.fit(X_train, y_train)
-    dump(model, '/digits/models/production_model.joblib')
-    # dump(model, 'models/production_model.joblib') 
+    dump(model, model_filename)  # Save the model with the provided filename
     return model
+
 
 #prediction and accuracy evaluation
 def predict_and_eval(model, X_test, y_test):
