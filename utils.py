@@ -40,7 +40,8 @@ def train_model(X_train, y_train, model_params, model_type):
         clf =tree.DecisionTreeClassifier
     model = clf(**model_params)
     model.fit(X_train, y_train)
-    # dump(model, 'production_model.joblib') 
+    dump(model, '/digits/models/production_model.joblib')
+    # dump(model, 'models/production_model.joblib') 
     return model
 
 #prediction and accuracy evaluation

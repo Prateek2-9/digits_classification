@@ -12,6 +12,18 @@ import sys
 from joblib import dump, load
 from sklearn.metrics import confusion_matrix, classification_report,f1_score
 
+# if __name__ == "__main__":
+#     if len(sys.argv) != 6:
+#         print("Usage: python plot_digits_classification.py <total_run> <dev_size> <test_size> <prod_model_path> <model_type>")
+#         sys.exit(1)
+
+#     total_run = int(sys.argv[1])
+#     dev_size = float(sys.argv[2])
+#     test_size = float(sys.argv[3])
+#     prod_model_path = sys.argv[4]
+#     model_type = sys.argv[5]
+
+
 total_run = int(sys.argv[1])
 dev_size = [float(sys.argv[2])]
 test_size = [float(sys.argv[3])]
