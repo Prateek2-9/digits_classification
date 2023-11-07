@@ -13,6 +13,6 @@ VOLUME /digits/models
 CMD ["pytest"]
 #run python script to train model
 ENTRYPOINT ["python","plot_digits_classification.py"]
-# run exp.py to train svm model
+# run plot_digits_classification.py to train svm model
 # CMD ["python", "exp.py", "--total_run", "1", "--dev_size", "0.2", "--test_size", "0.2", "--model_type", "svm"]
 
