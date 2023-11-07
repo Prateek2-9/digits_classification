@@ -1,2 +1,2 @@
 docker build -t digits:v1 -f docker/Dockerfile .
-docker run -v /Users/prateeksingh/Desktop/digits_trained_model:/digits/models digits:v1
+docker run -v /Users/prateeksingh/Desktop/digits_trained_model:/digits/models digits:v1 --total_run 1 --dev_size 0.2 --test_size 0.2 --model_type 'svm' 
