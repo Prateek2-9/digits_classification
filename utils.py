@@ -32,28 +32,21 @@ def split_train_dev_test(X, y, test_size, dev_size):
 
 
 
-# #model training
-# def train_model(X_train, y_train, model_params, model_type):
-#     if model_type == 'svm':
-#         clf = svm.SVC
-#     if model_type == 'tree':
-#         clf =tree.DecisionTreeClassifier
-#     model = clf(**model_params)
-#     model.fit(X_train, y_train)
-#     dump(model, '/digits/models/production_model.joblib')
-#     # dump(model, 'models/production_model.joblib') 
-#     return model
-
-def train_model(X_train, y_train, model_params, model_type, model_filename):
+#model training
+def train_model(X_train, y_train, model_params, model_type):
     if model_type == 'svm':
         clf = svm.SVC
-    elif model_type == 'tree':
-        clf = tree.DecisionTreeClassifier
+    if model_type == 'tree':
+        clf =tree.DecisionTreeClassifier
     model = clf(**model_params)
     model.fit(X_train, y_train)
-    dump(model, model_filename)  # Save the model with the provided filename
+    tmp = '_'.join([f"{k}:{v}"for k,v in model_params.items()])
+    model_path = f"models/{model_type}_{tmp}.joblib"
+    try:
+        dump(model, model_path)
+    except Exception as e:
+        print(str(e))
     return model
-
 
 #prediction and accuracy evaluation
 def predict_and_eval(model, X_test, y_test):
@@ -61,19 +54,6 @@ def predict_and_eval(model, X_test, y_test):
     accuracy = metrics.accuracy_score(y_test, predicted) * 100
     return accuracy, predicted
 
-
-#Visualize first n sample and show their prediction
-# def visualize_first_n_sample_prediction(X_test, y_pred, n = 4):
-#     _, axes = plt.subplots(nrows=1, ncols=n, figsize=(10, 3))
-#     for ax, image, prediction in zip(axes, X_test, y_pred):
-#         ax.set_axis_off()
-#         image = image.reshape(8, 8)
-#         ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
-#         ax.set_title(f"Prediction: {prediction}")
-
-#return classification report
-# def get_classification_report(y_test, y_pred):
-#     return metrics.classification_report(y_test, y_pred)
 
 
 #this is done in two for loops, irespective of number of params
