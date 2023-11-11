@@ -5,14 +5,17 @@ COPY . /digits/
 # RUN apt-get update
 # RUN apt-get install -y python3 python3-pip
 RUN pip3 install -r /digits/requirements.txt
-#set work dir
+# setting work dir
 WORKDIR /digits
-#create volume to mount it on host
+#creating volume for mounting on host
 VOLUME /digits/models
-#run pytest 
-CMD ["pytest"]
-#run python script to train model
-ENTRYPOINT ["python","plot_digits_classification.py"]
+# to run pytest 
+# CMD ["pytest"]
+# FOR flask api run 
+ENV FLASK_APP=/digits/api/app.py
+# FOR flask api run
+CMD ["flask","run","--host=0.0.0.0"]
+# running py script to train model
+#ENTRYPOINT ["python","plot_digits_classification.py"]
 # run exp.py to train svm model
-# CMD ["python", "exp.py", "--total_run", "1", "--dev_size", "0.2", "--test_size", "0.2", "--model_type", "svm"]
-
+#CMD ["python", "exp.py", "--total_run", "1", "--dev_size", "0.2", "--test_size", "0.2", "--model_type", "svm"]
