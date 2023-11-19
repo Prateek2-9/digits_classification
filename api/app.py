@@ -1,6 +1,14 @@
 from flask import Flask,request
-from joblib import  load
+#from joblib import  load
 import numpy as np
+from PIL import Image
+import numpy as np
+from utils import preprocess_data
+import joblib
+import json
+
+
+from flask import Flask, request, jsonify, render_template
 app = Flask(__name__)
 
 @app.route("/")
@@ -27,27 +35,69 @@ def sum_two_numbers(x,y):
 #     # res = int(x) + int(y)
 #     return f"sum of {x} and {y} is {x + y}"
 
-@app.route("/predict", methods = ['POST'])
-def predict_fn():
-    input_data = request.get_json()
-    img1 = input_data['img1']
-    img2 = input_data['img2']
+# @app.route("/predict", methods = ['POST'])
+# def predict_fn():
+#     input_data = request.get_json()
+#     img1 = input_data['img1']
+#     img2 = input_data['img2']
 
-    img1 = list(map(float, img1))
-    img2 = list(map(float, img2))
+#     img1 = list(map(float, img1))
+#     img2 = list(map(float, img2))
 
-    img1 = np.array(img1).reshape(1,-1)
-    img2 = np.array(img2).reshape(1,-1)
+#     img1 = np.array(img1).reshape(1,-1)
+#     img2 = np.array(img2).reshape(1,-1)
 
-    model = load("production_model.joblib")
-    predicted1 = model.predict(img1)
-    predicted2 = model.predict(img2)
-    if predicted1[0] == predicted2[0]:
-        print("Both images are of same digit")
-        return "True"
+#     model = load("production_model.joblib")
+#     predicted1 = model.predict(img1)
+#     predicted2 = model.predict(img2)
+#     if predicted1[0] == predicted2[0]:
+#         print("Both images are of same digit")
+#         return "True"
+#     else:
+#         print("Both images are not of same digit")
+#         return "False"
+
+# if __name__ == '__main__':
+#     app.run(host = '0.0.0.0', port = 80)
+
+
+# Define a route to handle image upload and prediction
+@app.route("/predict", methods=["POST"])
+def predict():
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"})
+
+    file = request.files["file"]
+
+    if file.filename == "":
+        return jsonify({"error": "No selected file"})
+
+    if file:
+        image = _read_image(Image.open(file))
+        model_path = "models/best_model_C-1_gamma-0.001.joblib"
+        model = joblib.load(model_path)
+        prediction = model.predict(image)
+        return jsonify({"prediction": str(prediction[0])})
     else:
-        print("Both images are not of same digit")
-        return "False"
+        return jsonify({"error": "Invalid file format"})
 
-if __name__ == '__main__':
-    app.run(host = '0.0.0.0', port = 80)
+
+@app.route("/prediction", methods=["POST"])
+def prediction():
+    data_json = request.json
+    if data_json:
+        data_dict = json.loads(data_json)
+        image = np.array([data_dict["image"]])
+        model_path = "models/best_model_C-1_gamma-0.001.joblib"
+        model = joblib.load(model_path)
+        try:
+            prediction = model.predict(image)
+            return jsonify({"prediction": str(prediction[0])})
+        except Exception as e:
+            return jsonify({"error": str(e)})
+    else:
+        return jsonify({"error": "Invalid data format"})
+
+if __name__ == "__main__":
+    print("server is running")
+    app.run(host="0.0.0.0", port=8000)

@@ -13,6 +13,10 @@ def load_dataset():
     y = digit_data.target
     return X,y
 
+# flatten the images
+def preprocess_data(data):
+    n = len(data)
+    return data.reshape((n, -1))
 
 #data preprocessing
 def data_preprocessing(data):
