@@ -2,18 +2,24 @@ how to SETUP: follow below steps
 
 conda create -n plot_digits_classification python=3.9   // creating env
 conda activate plot_digits_classification // activating env
-pip install -r requirements.txt // installing project requirements
+
+installing project requirements:
+pip install -r requirements.txt 
 
 how to RUN:
 
 python plot_digits_classification.py
 
-Meaning of failure:
+how to run from dockersh:
 
--poor performance metrics
--coding runtime/compile error
--model gave bad predictions for test sample
+./docker_run.sh     
 
-Feature:
+how to build and run docker :
 
-- vary model hyper parameters
+docker build -t digits:v1 -f docker/Dockerfile .  
+docker run -it digits:v1   
+docker run -it -p 5001:5000 digits:v1           
+
+how to run flask : goto api folder
+
+flask run

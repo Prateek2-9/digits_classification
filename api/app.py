@@ -17,7 +17,8 @@ def sum_two_numbers(x,y):
     res = int(x) + int(y)
     return f"sum of {x} and {y} is {res}"
 
-# model = load()
+# model = load("models/production_model.joblib")
+
 # @app.route("/predict", methods = ['POST'])
 # def predict_fn():
 #     input_data = request.get_json()
@@ -38,7 +39,7 @@ def predict_fn():
     img1 = np.array(img1).reshape(1,-1)
     img2 = np.array(img2).reshape(1,-1)
 
-    model = load("/Users/prateeksingh/digits-classification/models/production_model.joblib")
+    model = load("production_model.joblib")
     predicted1 = model.predict(img1)
     predicted2 = model.predict(img2)
     if predicted1[0] == predicted2[0]:
@@ -47,4 +48,6 @@ def predict_fn():
     else:
         print("Both images are not of same digit")
         return "False"
-    
+
+if __name__ == '__main__':
+    app.run(host = '0.0.0.0', port = 80)
