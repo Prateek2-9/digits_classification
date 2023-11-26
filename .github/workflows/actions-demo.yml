@@ -1,11 +1,11 @@
-name: GitHub Actions Demo
+name: GitHub Actions
 on: [push]
 jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8.1]
+        python-version: [3.9.17]
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
@@ -17,10 +17,15 @@ jobs:
       - name: List files in the repository
         run: |
           ls -r ${{ github.workspace }}
-      - run: echo "🍏 This job's is status is ${{ job.status }}."
+      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - run: echo "installing all requirements of the repo -- Quiz addition"
       - name: Install dep
-        run: pip3 install --no-cache-dir -r requirements.txt
-      - name: Run pytest cases
+        run:  pip3 install --no-cache-dir -r requirements.txt
+      - name: Running test cases
         run: pytest
-      - name: Run experiment
-        run: python plot_digits_classification.py 2 0.2 0.2 'production_model.joblib' 'svm'
+      # - name: Run python file
+      #   run: python exp.py --hyperparameters hyperparameters.json
+      # - name: Build and run docker image
+      #   run: |
+      #     chmod +x docker_run.sh
+      #     sh ./docker_run.sh
