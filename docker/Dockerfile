@@ -17,9 +17,9 @@ RUN pip3 install --no-cache-dir -r /digits/requirements.txt
 #ENV FLASK_APP=/digits/api/app.py
 # FOR flask api run
 #CMD ["flask","run","--host=0.0.0.0"]
-ENV FLASK_APP=api/app
-CMD ["python", "api/app.py"]
+##ENV FLASK_APP=api/app
+##CMD ["python", "api/app.py"]
 # running py script to train model
 #ENTRYPOINT ["python","plot_digits_classification.py"]
 # run exp.py to train svm model
-#CMD ["python", "exp.py", "--total_run", "1", "--dev_size", "0.2", "--test_size", "0.2", "--model_type", "svm"]
+CMD ["python", "plot_digits_classification.py", "--total_run", "5", "--dev_size", "0.2", "--test_size", "0.3", "--prod_model_path", "production_model.joblib", "--model_type", "svm"]
