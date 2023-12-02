@@ -4,7 +4,9 @@ from sklearn import datasets, svm, metrics, tree
 import matplotlib.pyplot as plt
 from itertools import product
 from joblib import dump, load
-
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score
 
 #load dataset from sklearn
 def load_dataset():
@@ -19,10 +21,18 @@ def preprocess_data(data):
     return data.reshape((n, -1))
 
 #data preprocessing
-def data_preprocessing(data):
-    n_samples = len(data)
-    data = data.reshape((n_samples, -1))
-    return data
+
+# Updated data_preprocessing function
+def data_preprocessing(X):
+    # Flatten the images
+    n_samples, width, height = X.shape
+    X_flat = X.reshape((n_samples, -1))
+
+    # Perform unit normalization
+    scaler = StandardScaler()
+    X_normalized = scaler.fit_transform(X_flat)
+
+    return X_normalized
 
 #spliting data 
 # def train_test_spliting(X,y):
@@ -37,14 +47,31 @@ def split_train_dev_test(X, y, test_size, dev_size):
 
 
 #model training
+# def train_model(X_train, y_train, model_params, model_type):
+#     if model_type == 'svm':
+#         clf = svm.SVC
+#     if model_type == 'tree':
+#         clf =tree.DecisionTreeClassifier
+#     model = clf(**model_params)
+#     model.fit(X_train, y_train)
+#     tmp = '_'.join([f"{k}:{v}"for k,v in model_params.items()])
+#     model_path = f"models/{model_type}_{tmp}.joblib"
+#     try:
+#         dump(model, model_path)
+#     except Exception as e:
+#         print(str(e))
+#     return model
+
 def train_model(X_train, y_train, model_params, model_type):
     if model_type == 'svm':
         clf = svm.SVC
-    if model_type == 'tree':
-        clf =tree.DecisionTreeClassifier
+    elif model_type == 'tree':
+        clf = tree.DecisionTreeClassifier
+    elif model_type == 'lr':
+        clf = LogisticRegression
     model = clf(**model_params)
     model.fit(X_train, y_train)
-    tmp = '_'.join([f"{k}:{v}"for k,v in model_params.items()])
+    tmp = '_'.join([f"{k}:{v}" for k, v in model_params.items()])
     model_path = f"models/{model_type}_{tmp}.joblib"
     try:
         dump(model, model_path)

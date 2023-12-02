@@ -7,6 +7,27 @@ import json
 from api.app import app
 from sklearn import datasets
 import numpy as np
+from sklearn.linear_model import LogisticRegression
+
+def test_loaded_model_is_logistic_regression():
+    roll_no = "m22aie214"  
+    solver = 'liblinear'
+    model_path = f"models/{roll_no}_lr_{solver}.joblib"
+      
+    loaded_model = load(model_path)
+      
+    assert isinstance(loaded_model, LogisticRegression)
+
+def test_solver_name_match():
+    roll_no = "m22aie214"  
+    solver = 'liblinear'  
+    model_path = f"models/{roll_no}_lr_{solver}.joblib"
+    
+    loaded_model = load(model_path)
+    
+    filename_solver = model_path.split('_')[-1].split('.')[0]
+    
+    assert loaded_model.get_params()['solver'] == filename_solver
 
 def test_get_list_of_param_comination():
     gamma_values = [0.001, 0.002, 0.005, 0.01, 0.02]
