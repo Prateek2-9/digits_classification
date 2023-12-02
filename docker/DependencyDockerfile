@@ -1,0 +1,10 @@
+# DependencyDockerfile
+FROM python:3.8.1
+
+WORKDIR /digits
+
+# Copy only the requirements file to leverage Docker cache
+COPY requirements.txt /digits/
+
+# Install dependencies
+RUN pip install -r requirements.txt

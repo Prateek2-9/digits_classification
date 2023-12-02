@@ -1,0 +1,10 @@
+# FinalDockerfile
+FROM prateekprateekmlops23.azurecr.io/dependency-image
+
+WORKDIR /digits
+
+# Copy the rest of the application code
+COPY . /digits/
+
+# CMD for running unit tests using pytest
+CMD ["pytest", "-v"]

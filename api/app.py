@@ -7,9 +7,47 @@ from utils import preprocess_data
 import joblib
 import json
 
+from flask import Flask, request, jsonify
+from joblib import load
 
-from flask import Flask, request, jsonify, render_template
 app = Flask(__name__)
+
+def load_model(model_type):
+    roll_no = "m22aie214"  
+
+    if model_type == 'svm':
+        model_path = f"models/{roll_no}_svm.joblib"
+    elif model_type == 'lr':
+        model_path = f"models/{roll_no}_lr_liblinear.joblib"
+    elif model_type == 'tree':
+        model_path = f"models/{roll_no}_tree.joblib"
+    else:
+        raise ValueError(f"Unsupported model type: {model_type}")
+
+    loaded_model = load(model_path)
+    return loaded_model
+
+@app.route("/predict/<string:model_type>", methods=["POST"])
+def predict_model(model_type):
+    try:
+        
+        model = load_model(model_type)
+
+        
+        input_data = request.json.get("image")
+        
+        
+        processed_data = preprocess_data(input_data)
+
+        
+        prediction = model.predict(processed_data)
+
+       
+        return jsonify({"prediction": int(prediction[0])})
+
+    except Exception as e:
+        # Handle any exceptions
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/")
 def hello_world():
